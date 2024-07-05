@@ -3,14 +3,15 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials-id')
-        DOCKERHUB_REPO = 'your-dockerhub-username/your-repo-name'
+        DOCKERHUB_REPO = 'shan20000/angular'
+        BUILD_NUMBER    = "Frontend"
         KUBECONFIG_CREDENTIALS = credentials('kubeconfig-credentials-id')
     }
 
     stages {
         stage('Pull Source Code') {
             steps {
-                git 'https://github.com/your-repo.git'
+                git 'https://github.com/Shantanu20000/DevOps-Fullstack-App-Project-With-Docker.git/frontend'
             }
         }
 
@@ -26,7 +27,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', 'DOCKERHUB_CREDENTIALS') {
-                        docker.image("${DOCKERHUB_REPO}:${env.BUILD_NUMBER}").push()
+                        docker.image("${DOCKERHUB_REPO}:${env.BUILD_NUMBER}").push(v1)
                     }
                 }
             }
@@ -36,7 +37,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', 'DOCKERHUB_CREDENTIALS') {
-                        docker.image("${DOCKERHUB_REPO}:${env.BUILD_NUMBER}").pull()
+                        docker.image("${DOCKERHUB_REPO}:${env.BUILD_NUMBER}").pull(v1)
                     }
                 }
             }
@@ -45,20 +46,9 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    withKubeConfig([credentialsId: 'KUBECONFIG_CREDENTIALS']) {
-                        sh '''
-                        kubectl set image deployment/your-deployment your-container=${DOCKERHUB_REPO}:${env.BUILD_NUMBER}
-                        kubectl rollout status deployment/your-deployment
-                        '''
-                    }
+                    kubernetesDeploy(configs: "k8s-onepod.yaml", kubeconfigId: 'KUBECONFIG_CREDENTIALS')
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            cleanWs()
         }
     }
 }
