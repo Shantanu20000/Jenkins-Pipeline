@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials-id')
         DOCKERHUB_REPO = 'shan20000/angular'
-        BUILD_NUMBER    = "Frontend-pipeline"
+        BUILD_TAG    = "Frontend-pipeline"
         KUBECONFIG_CREDENTIALS = credentials('kubeconfig-credentials-id')
     }
 
@@ -18,7 +18,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${DOCKERHUB_REPO}:${env.BUILD_NUMBER}")
+                    docker.build("${DOCKERHUB_REPO}:${env.BUILD_TAG}")
                 }
             }
         }
@@ -27,7 +27,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', 'DOCKERHUB_CREDENTIALS') {
-                        docker.image("${DOCKERHUB_REPO}:${env.BUILD_NUMBER}").push(v1)
+                        docker.image("${DOCKERHUB_REPO}:${env.BUILD_TAG}").push(v1)
                     }
                 }
             }
@@ -37,7 +37,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', 'DOCKERHUB_CREDENTIALS') {
-                        docker.image("${DOCKERHUB_REPO}:${env.BUILD_NUMBER}").pull(v1)
+                        docker.image("${DOCKERHUB_REPO}:${env.BUILD_TAG}").pull(v1)
                     }
                 }
             }
